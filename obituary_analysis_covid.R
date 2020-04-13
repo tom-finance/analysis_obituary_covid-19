@@ -104,11 +104,11 @@ finale <- do.call(rbind.data.frame, final)
 
 # save data on local disc
 write.csv2(finale, 
-           "input/daily_deaths_2012_2020.csv",
+           "input_data/input/daily_deaths_2012_2020.csv",
            row.names = FALSE)
 
-# load if you don't want to rerun web scraping process
-finale <- read.csv2("daily_deaths_2012_2020.csv",
+# load existing data if you don't want to rerun web scraping process
+finale <- read.csv2("input_data/daily_deaths_2012_2020.csv",
                     stringsAsFactors = FALSE)
 
 # make date vector
