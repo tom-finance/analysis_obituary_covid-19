@@ -12,6 +12,7 @@ library(dplyr)
 library(xts)
 library(forecast)
 library(ggplot2)
+library(pbapply)
 
 ################################################################################
 
@@ -36,7 +37,7 @@ getNextUrl <- function(url) {
 scrapeBackApply <- function(url, n) {
   # url: starting url
   # n: how many subpages do we want to go back?
-  sapply(1:n, function(x) {
+  pbsapply(1:n, function(x) {
     r <- getPostContent(url)
     # Overwrite global 'url'
     url <<- getNextUrl(url)
@@ -68,7 +69,6 @@ string_clean <- function(x) {
     
   }
   
-  
   res <- t(matrix(res
                 ,nrow=length(res)
                 ,byrow=TRUE))
@@ -88,7 +88,7 @@ string_clean <- function(x) {
 url <-  "https://www.trauerhilfe.it/verstorbene/"
 
 # use function
-data_scraped <- scrapeBackApply(url, 800)
+data_scraped <- scrapeBackApply(url, 300)
 
 # clean data
 final <- list()
@@ -111,8 +111,13 @@ write.csv2(finale,
 finale <- read.csv2("input_data/daily_deaths_2012_2020.csv",
                     stringsAsFactors = FALSE)
 
-# make date vector
+# make date vector (when data is loaded from local disc)
 finale$V2 <- as.Date(finale$V2, "%Y-%m-%d")
+
+
+# make date vector (when data is directly scraped from the internet)
+finale$V2 <- as.Date(finale$V2, "%d.%m.%Y")
+
 
 # aggretage by day
 per_day <- finale %>%
