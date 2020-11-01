@@ -46,10 +46,12 @@ data_st <- data %>%
 ggplot(data_st) + 
   geom_line(
     mapping = aes(x = date, y = workplaces_percent_change_from_baseline),
-    color = "darkgrey") +
+    color = "darkgrey", size = 1) +
   theme_minimal() +
   ggtitle("workplaces_percent_change_from_baseline South Tyrol") +
-  geom_hline(yintercept=0, linetype="dashed", color = "orangered", size = 1)
+  geom_hline(yintercept=0, linetype="dashed", color = "orangered", size = 1) +
+  geom_hline(yintercept=min(data_st$workplaces_percent_change_from_baseline), 
+             linetype="dashed", color = "orangered", size = 1)
 
 
 # plot and compare all variables in one plot for South Tyrol
