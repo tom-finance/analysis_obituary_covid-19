@@ -45,9 +45,11 @@ data_st <- data %>%
 # plot one variable of South Tyrol data
 ggplot(data_st) + 
   geom_line(
-    mapping = aes(x = date, y = workplaces_percent_change_from_baseline)) +
+    mapping = aes(x = date, y = workplaces_percent_change_from_baseline),
+    color = "darkgrey") +
   theme_minimal() +
-  ggtitle("workplaces_percent_change_from_baseline South Tyrol")
+  ggtitle("workplaces_percent_change_from_baseline South Tyrol") +
+  geom_hline(yintercept=0, linetype="dashed", color = "orangered", size = 1)
 
 
 # plot and compare all variables in one plot for South Tyrol
@@ -77,7 +79,8 @@ ggplot(meltdf,aes(x=date,
   geom_text(aes(x=as.Date("2020-05-06"), 
                 label="Ende Lockdown Italien", y=100), 
             colour="blue", angle=90) +
-  ggtitle("Google Mobility Report Daten Südtirol")
+  ggtitle("Google Mobility Report Daten Südtirol") +
+  theme(legend.position="bottom") # change legend position
 
 
 # plot and compare all variables of South Tyrol since start of September
@@ -87,6 +90,7 @@ ggplot(meltdf %>%
                   colour=variable,
                   group=variable)) + geom_line() +
   theme_minimal() +
+  theme(legend.position="bottom") + # change legend position
   geom_hline(yintercept=0, linetype="dashed", color = "orangered", size = 1)
 
 # calculate moving average to denoise the data and better show actual trend line!
@@ -120,7 +124,20 @@ ggplot(data_ma_st,aes(x=date,
   geom_text(aes(x=as.Date("2020-05-06"), 
                 label="Ende Lockdown Italien", y=100), 
             colour="blue", angle=90) +
-  ggtitle("Google Mobility Report Daten Südtirol")
+  ggtitle("Google Mobility Report Daten Südtirol") +
+  theme(legend.position="bottom") # change legend position
+
+
+# let's look at the situation since the start of September 2020
+ggplot(data_ma_st %>%
+         filter(date > "2020-09-01"),aes(x=date,
+                      y=roll_mean,
+                      colour=variable,
+                      group=variable)) + geom_line() +
+  theme_minimal() +
+  geom_hline(yintercept=0, linetype="dashed", color = "orangered", size = 1) +
+  theme(legend.position="bottom") # change legend position
+
 
 
 # compare actual data with moving average for workplaces_percent_change_from_baseline
@@ -141,7 +158,9 @@ ggplot(data %>%
                   y=workplaces_percent_change_from_baseline,
                   colour=sub_region_1,
                   group=sub_region_1)) + geom_line() +
-  theme_minimal()
+  theme_minimal() +
+  geom_hline(yintercept=0, linetype="dashed", color = "orangered", size = 1)
+
 
 # daily data is very noisy --> calculate monthly moving average
 
