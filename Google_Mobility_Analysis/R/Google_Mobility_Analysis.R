@@ -81,6 +81,9 @@ ggplot(meltdf,aes(x=date,
   geom_text(aes(x=as.Date("2020-05-06"), 
                 label="Ende Lockdown Italien", y=100), 
             colour="blue", angle=90) +
+  annotate("rect", xmin = as.Date("2020-03-11"), # add shaded rectangle
+           xmax = as.Date("2020-05-04"), 
+           ymin = -100, ymax = 300, alpha = .15, fill = "lightblue") +
   ggtitle("Google Mobility Report Daten Südtirol") +
   theme(legend.position="bottom") # change legend position
 
