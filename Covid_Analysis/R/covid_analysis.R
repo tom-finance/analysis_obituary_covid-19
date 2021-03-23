@@ -13,6 +13,11 @@ library(incidence)
 
 # to do: calculate 7 day incidence per 100k inhabitants and compare curves!
 
+
+# Information:
+# Download daily incidence data from here:
+# http://www.provinz.bz.it/sicherheit-zivilschutz/zivilschutz/aktuelle-daten-zum-coronavirus.asp
+
 ################################################################################
 
 # import Covid data
