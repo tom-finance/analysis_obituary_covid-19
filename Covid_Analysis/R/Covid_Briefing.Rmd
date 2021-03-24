@@ -1,0 +1,127 @@
+---
+title: |
+  | \textbf{Covid-19 Briefing South Tyrol}
+  | Executive Summary
+author: | 
+  | \textsc{Thomas Ludwig}
+  | thomas.ludwig95@gmail.com
+date: "`r format(Sys.time(), '%d. %B %Y')`"
+output: 
+  beamer_presentation:
+    keep_tex: false
+    slide_level: 2
+    toc: false
+    theme: "boxes"
+    colortheme: "dove"
+header-includes:
+- \usepackage[german]{babel}
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{xcolor}
+- \usepackage[hang, small, bf, margin=20pt, tableposition=top]{caption}
+- \setlength{\abovecaptionskip}{0pt}
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+
+# source script with analysis
+source("covid_analysis.R", encoding = "UTF-8")
+
+```
+
+## Covid-19 Briefing South Tyrol
+
+- Summary of most important drivers of Covid-19 pandemic for South Tyrol
+- Data is obtained from: http://www.provinz.bz.it/sicherheit-zivilschutz/zivilschutz/coronavirus.asp
+- Population data for 7 day incidence calculation is taken from: https://de.wikipedia.org/wiki/Bezirksgemeinschaft
+- Parametric estimation of $\text{R}_\text{eff}$ is provided
+- I use *EpiEstim* package (https://cran.r-project.org/web/packages/EpiEstim/index.html)
+- Parameters might me biased because of mutations $\rightarrow$ **$\text{R}_\text{eff}$ only indicative!**
+- **Please consider disclaimer on last page!**
+
+
+## Smoothed Raw Data New Cases
+
+```{r, echo=FALSE}
+
+plot_smooth
+
+```
+
+## Daily Incidence South Tyrol
+
+```{r, echo=FALSE}
+
+incidence_daily
+
+```
+
+
+## Overall 7-day incidence per 100k South Tyrol
+
+```{r, echo=FALSE}
+
+seven_day
+
+```
+
+## 7-day incidence per 100k Details
+
+```{r, echo=FALSE}
+
+seven_day_all
+
+```
+
+
+## Estimation of $\text{R}_\text{eff}$
+
+- I use approach proposed by Cori et al. (2013)
+- Implemented in **EpiEstim** R package
+- I use parametric approach for serial interval
+- *Offset Gamma distribution* is used for the serial interval
+- Estimation window: sliding weekly windows
+- No explicit estimation of parameters
+- I use best practice parameters for Covid-19 pandemic:
+- Mean: 4.8
+- Standard Deviation: 2.3
+
+## $\text{R}_\text{eff}$ Estimation Results for South Tyrol
+
+```{r, echo=FALSE}
+
+r_eff
+
+```
+
+
+
+## Summary of $\text{R}_\text{eff}$ Estimation
+
+```{r, echo=FALSE}
+
+plot(res_parametric_si)
+
+```
+
+
+## Disclaimer
+
+- All results are illustrative - no claim to completeness of analysis
+- Results don't necessarily match official data
+- Different data and calculations to official data possible
+- All errors are my own
