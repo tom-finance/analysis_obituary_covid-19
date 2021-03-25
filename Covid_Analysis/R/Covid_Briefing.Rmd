@@ -37,6 +37,7 @@ header-includes:
 
 knitr::opts_chunk$set(echo = FALSE)
 
+library(kableExtra) # nice tables
 
 # source script with analysis
 source("covid_analysis.R", encoding = "UTF-8")
@@ -108,6 +109,16 @@ r_eff
 
 ```
 
+
+## $\text{R}_\text{eff}$ Detail Table
+
+```{r, echo=FALSE}
+
+kable(tbl_r, "latex", booktabs = T, caption = "R Estimation South Tyrol",
+      digits = 3, format.args = list(big.mark = ","), linesep = "") %>%
+  kable_styling(position = "center", latex_options = "hold_position")
+
+```
 
 
 ## Summary of $\text{R}_\text{eff}$ Estimation

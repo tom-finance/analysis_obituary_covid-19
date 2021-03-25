@@ -23,14 +23,18 @@ library(RcppRoll)
 
 
 # to do:
-# add automated download from internet to analysis!
 # plots with lockdown rectangel: end of lockdown is fixed value!
 
 ################################################################################
 
-# import Covid data
-data <- read.csv2("../Input/Corona.Data.Detail.csv",
+# import Covid-19 data from manually downloaded csv --> see second approach for direct import
+# data <- read.csv2("../Input/Corona.Data.Detail.csv",
+#                   na.strings = "null", encoding = "UTF-8")
+
+# import Covid-19 data directly from stable URL --> be careful, breaks is URL changes!
+data <- read.csv2("https://afbs.provinz.bz.it/upload/coronavirus/Corona.Data.Detail.csv",
                   na.strings = "null", encoding = "UTF-8")
+
 
 # import reference data
 gemeinden <- read_excel("../Input/gemeindedaten.xlsx") %>%
@@ -43,6 +47,14 @@ data$datum <- gsub(" 00:00:00.0", "", data$datum)
 data$datum <- as.Date(data$datum, "%Y-%m-%d")
 data$name <- gsub(" Gesamt", "", data$name)
 
+
+#######################
+# Manual Inputs
+#######################
+
+start_lockdown <- as.Date("2021-02-14")
+end_lockdown <- max(data$datum)
+
 #######################
 # Population data
 #######################
@@ -52,7 +64,7 @@ population <- data.frame(Bezirkgsgemeinschaft = c("Burggrafenamt", "Eisacktal",
                                                   "Überetsch-Südtiroler Unterland", "Vinschgau",
                                                   "Wipptal", "Bozen", "0_Südtirol total"),
                          Einwohner = c(100000, 50000, 80000, 50000, 75000, 35000, 20000,
-                                       107000, 521000))
+                                       107000, 533439))
 
 ################################################################################
 
@@ -64,7 +76,7 @@ data_clean <- data %>%
   summarise(Sum_Cases = sum(sumPos.pcr.antigen.)) %>%
   filter(!is.na(Sum_Cases)) %>% 
   group_by(Bezirkgsgemeinschaft) %>% 
-  mutate(New_cases = Sum_Cases - lag(Sum_Cases)) %>% 
+  mutate(New_cases = Sum_Cases - lag(Sum_Cases)) %>% # calculate daily incidence
   ungroup() %>% 
   filter(!is.na(New_cases)) %>% 
   mutate(New_cases = case_when(New_cases < 0 ~ 0L, # set incidence to zero if negative
@@ -81,10 +93,9 @@ plot_smooth <- ggplot(data_clean, aes(x = datum, y = New_cases)) +
   geom_point() +
   theme_minimal() +
   labs(x = "Datum", y = "neue Fälle") +
-  geom_vline(xintercept = as.Date("2021-02-14"), linetype="solid", 
+  geom_vline(xintercept = start_lockdown, linetype="solid", 
              color = "orangered", size=1) +
   geom_smooth(method = "loess", formula = 'y ~ x') +
-  # labs(caption="\U00A9 Thomas Ludwig") +
   facet_wrap(vars(Bezirkgsgemeinschaft), scales = "free") +
   theme(panel.spacing=unit(.02, "lines"),
         panel.border = element_rect(color = "black", fill = NA, size = 0.5), 
@@ -101,8 +112,8 @@ seven_day_incidence <- data_clean %>%
   mutate(roll_sum = roll_sum(New_cases, 7, align = "right", fill = NA)) %>% 
   ungroup() %>% 
   left_join(., population) %>% # join with population data
-  filter(!is.na(roll_sum)) %>%  # exclude NA values
-  mutate(seven_day_incidence = roll_sum/Einwohner*10^5)
+  filter(!is.na(roll_sum)) %>%  # exclude NA values fromd data
+  mutate(seven_day_incidence = roll_sum/Einwohner*10^5) # calculate 7 day incidence/100k
 
 #################
 # Plot data
@@ -128,8 +139,8 @@ seven_day <- ggplot(seven_day_incidence %>%
   theme_minimal() +
   labs(x = "Datum", y = "7-Tages Inzidenz/100k EW") +
   theme(legend.position="bottom") +
-  annotate("rect", xmin = as.Date("2021-02-14"), # add shaded rectangle
-           xmax = as.Date("2021-03-23"), 
+  annotate("rect", xmin = start_lockdown, # add shaded rectangle
+           xmax = end_lockdown, 
            ymin = 0, ymax = max_value_overall, 
            alpha = .15, fill = "lightblue") +
   geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1)
@@ -147,8 +158,8 @@ seven_day_all <- ggplot(seven_day_incidence, aes(x = datum, y = seven_day_incide
   theme_minimal() +
   labs(x = "Datum", y = "7-Tages Inzidenz/100k EW") +
   theme(legend.position="bottom") +
-  annotate("rect", xmin = as.Date("2021-02-14"), # add shaded rectangle
-           xmax = as.Date("2021-03-23"), 
+  annotate("rect", xmin = start_lockdown, # add shaded rectangle
+           xmax = end_lockdown, 
            ymin = 0, ymax = max(seven_day_incidence$seven_day_incidence), 
            alpha = .15, fill = "lightblue") +
   geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1)
@@ -197,8 +208,8 @@ r_eff <- plot(res_parametric_si, "R") +
   theme_minimal() +
   ggtitle("Estimated R_eff South Tyrol") +
   scale_x_date(date_breaks = "2 week", date_labels = "%d/%m/%Y") +
-  annotate("rect", xmin = as.Date("2021-02-14"), # add shaded rectangle
-           xmax = as.Date("2021-03-23"), 
+  annotate("rect", xmin = start_lockdown, # add shaded rectangle
+           xmax = end_lockdown, 
            ymin = 0, ymax = 2, alpha = .15, fill = "lightblue") +
   geom_line(size = 1) +
   # labs(caption="\U00A9 Thomas Ludwig") +
@@ -215,6 +226,14 @@ plot(res_parametric_si)
 
 # construct some nice summary output data frame
 res_all <- cbind(data_esti$datum[8:length(data_esti$datum)], res_parametric_si$R)
+
+# create nice table output
+tbl_r <- res_all %>% 
+  select(`data_esti$datum[8:length(data_esti$datum)]`, `Mean(R)`, `Quantile.0.05(R)`, `Quantile.0.95(R)`) %>% 
+  rename(Datum = `data_esti$datum[8:length(data_esti$datum)]`) %>% 
+  tail(., 10)
+
+row.names(tbl_r) <- NULL
 
 ################################################################################
 ################################################################################
