@@ -142,7 +142,7 @@ ggplot(data.frame(x = c(x_lower_g , x_upper_g)), aes(x = x)) +
        title = "Parametric Serial Interval Distribution",
        subtitle = "Gamma Distribution") +
   theme_minimal() +
-    geom_vline(xintercept = gamma_mean, linetype="dashed", 
+  geom_vline(xintercept = gamma_mean, linetype="dashed", 
              color = "orangered", size=1)
 
 ```
