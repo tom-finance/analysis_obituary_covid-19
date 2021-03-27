@@ -55,6 +55,9 @@ data$name <- gsub(" Gesamt", "", data$name)
 start_lockdown <- as.Date("2021-02-14")
 end_lockdown <- max(data$datum)
 
+gamma_mean <- 4.46
+gamma_sd <- 2.63
+
 #######################
 # Population data
 #######################
@@ -115,6 +118,26 @@ seven_day_incidence <- data_clean %>%
   filter(!is.na(roll_sum)) %>%  # exclude NA values fromd data
   mutate(seven_day_incidence = roll_sum/Einwohner*10^5) # calculate 7 day incidence/100k
 
+
+# get time information for reporting
+min_incidence <- seven_day_incidence %>% 
+  filter(datum == min(datum)) %>% 
+  select(datum) %>% 
+  distinct() %>% 
+  pull()
+
+max_incidence <- seven_day_incidence %>% 
+  filter(datum == max(datum)) %>% 
+  select(datum) %>% 
+  distinct() %>% 
+  pull()
+
+# create nice table output
+tbl_incidence <- seven_day_incidence %>% 
+  filter(datum == max(datum)) %>%
+  select(Bezirkgsgemeinschaft, New_cases, seven_day_incidence) %>% 
+  arrange(desc(seven_day_incidence))
+
 #################
 # Plot data
 #################
@@ -132,6 +155,7 @@ max_value_overall <- seven_day_incidence %>%
   filter(seven_day_incidence == max(seven_day_incidence)) %>% 
   pull()
 
+# create plot
 seven_day <- ggplot(seven_day_incidence %>% 
                       filter(Bezirkgsgemeinschaft == "0_Südtirol total"), 
                     aes(x = datum, y = seven_day_incidence)) +
@@ -143,7 +167,7 @@ seven_day <- ggplot(seven_day_incidence %>%
            xmax = end_lockdown, 
            ymin = 0, ymax = max_value_overall, 
            alpha = .15, fill = "lightblue") +
-  geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1)
+  geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1) 
 
 seven_day
 
@@ -163,7 +187,6 @@ seven_day_all <- ggplot(seven_day_incidence, aes(x = datum, y = seven_day_incide
            ymin = 0, ymax = max(seven_day_incidence$seven_day_incidence), 
            alpha = .15, fill = "lightblue") +
   geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1)
-
 
 seven_day_all
 
@@ -197,8 +220,8 @@ incidence_daily
 res_parametric_si <- estimate_R(data_esti$New_cases, 
                                 method="parametric_si",
                                 config = make_config(list(
-                                  mean_si = 4.8, 
-                                  std_si = 2.3)))
+                                  mean_si = gamma_mean, 
+                                  std_si = gamma_sd)))
 
 # fix date vector for nicer plot
 res_parametric_si$dates <- data_esti$datum
@@ -207,12 +230,12 @@ res_parametric_si$dates <- data_esti$datum
 r_eff <- plot(res_parametric_si, "R") +
   theme_minimal() +
   ggtitle("Estimated R_eff South Tyrol") +
-  scale_x_date(date_breaks = "2 week", date_labels = "%d/%m/%Y") +
+  # scale_x_date(date_breaks = "2 week", date_labels = "%d/%m/%Y") +
   annotate("rect", xmin = start_lockdown, # add shaded rectangle
            xmax = end_lockdown, 
-           ymin = 0, ymax = 2, alpha = .15, fill = "lightblue") +
+           ymin = 0, ymax = max(res_parametric_si$R[, 3]), 
+           alpha = .15, fill = "lightblue") +
   geom_line(size = 1) +
-  # labs(caption="\U00A9 Thomas Ludwig") +
   theme(legend.position="bottom") # change legend position
 
 r_eff
@@ -225,7 +248,8 @@ plot(res_parametric_si)
 
 
 # construct some nice summary output data frame
-res_all <- cbind(data_esti$datum[8:length(data_esti$datum)], res_parametric_si$R)
+res_all <- cbind(data_esti$datum[8:length(data_esti$datum)], 
+                 res_parametric_si$R)
 
 # create nice table output
 tbl_r <- res_all %>% 

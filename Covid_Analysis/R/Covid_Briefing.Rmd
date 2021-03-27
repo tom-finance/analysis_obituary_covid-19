@@ -35,22 +35,32 @@ header-includes:
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = FALSE)
-
+# load packages
 library(kableExtra) # nice tables
+
+# set global knitr options
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+
 
 # source script with analysis
 source("covid_analysis.R", encoding = "UTF-8")
+
+
+# calculate scale and shape parameter for Gamma distribution from given mean and sd
+alpha <- (gamma_mean/gamma_sd)^2
+beta <- gamma_sd^2/gamma_mean
 
 ```
 
 ## Covid-19 Briefing South Tyrol
 
 - Summary of most important drivers of Covid-19 pandemic for South Tyrol
+- Last available data point: `r max(data$datum)`
 - Data is obtained from: http://www.provinz.bz.it/sicherheit-zivilschutz/zivilschutz/coronavirus.asp
 - Population data for 7 day incidence calculation is taken from: https://de.wikipedia.org/wiki/Bezirksgemeinschaft
 - Parametric estimation of $\text{R}_\text{eff}$ is provided
-- I use *EpiEstim* package (https://cran.r-project.org/web/packages/EpiEstim/index.html)
+- I use **EpiEstim** package (https://cran.r-project.org/web/packages/EpiEstim/index.html)
 - Parameters might me biased because of mutations $\rightarrow$ **$\text{R}_\text{eff}$ only indicative!**
 - **Please consider disclaimer on last page!**
 
@@ -72,7 +82,7 @@ incidence_daily
 ```
 
 
-## Overall 7-day incidence per 100k South Tyrol
+## 7-Day Incidence 100k South Tyrol `r format(min_incidence, "%d.%m.%y")`-`r format(max_incidence, "%d.%m.%y")`
 
 ```{r, echo=FALSE}
 
@@ -80,7 +90,7 @@ seven_day
 
 ```
 
-## 7-day incidence per 100k Details
+## 7-day Incidence  100k Details `r format(min_incidence, "%d.%m.%y")`-`r format(max_incidence, "%d.%m.%y")`
 
 ```{r, echo=FALSE}
 
@@ -88,18 +98,54 @@ seven_day_all
 
 ```
 
+## 7-day Incidence  100k Detail Table `r format(max_incidence, "%d.%m.%y")`
+
+```{r, echo=FALSE}
+
+kable(tbl_incidence, "latex", booktabs = T, caption = "7 Day Incidence South Tyrol",
+      digits = 0, format.args = list(big.mark = ","), linesep = "") %>%
+  kable_styling(position = "center", latex_options = "hold_position")
+
+```
+
+**Important Note**: Sum of single new cases does not match with total cases, because some cases are not 
+associated with a local community.
 
 ## Estimation of $\text{R}_\text{eff}$
 
 - I use approach proposed by Cori et al. (2013)
 - Implemented in **EpiEstim** R package
 - I use parametric approach for serial interval
-- *Offset Gamma distribution* is used for the serial interval
-- Estimation window: sliding weekly windows
-- No explicit estimation of parameters
+- Estimation window: Sliding weekly windows
+- *Offset Gamma distribution* $\mathcal{G}(p,\, b)$ is used for the serial interval parametrization
 - I use best practice parameters for Covid-19 pandemic:
-- Mean: 4.8
-- Standard Deviation: 2.3
+- **Mean**: `r gamma_mean`
+- **Standard Deviation**: `r gamma_sd`
+- Parametrization leads to $\mathcal{G}(`r round(alpha, 2)`, `r round(beta, 2)`)$ Gamma distribution
+- See Richter, Schmid, Chakeri et al. (2020a) for parameter estimation of serial interval for Covid-19 pandemic
+
+## Parametric Serial Interval Distribution $\mathcal{G}(`r round(alpha, 2)`, `r round(beta, 2)`)$
+
+```{r, echo=FALSE}
+
+# initialize values
+x_lower_g <- 0
+x_upper_g <- 15
+
+# plot Gamma distribution for the given input mean and standard deviation parameters
+ggplot(data.frame(x = c(x_lower_g , x_upper_g)), aes(x = x)) + 
+  xlim(c(x_lower_g , x_upper_g)) + 
+  stat_function(fun = dgamma, args = list(shape = alpha, scale = beta), geom = "area", 
+                fill = "lightblue", alpha = 0.15) + 
+  stat_function(fun = dgamma, args = list(shape = alpha, scale = beta), size = 1) + 
+  labs(x = "Lenght Serial Interval", y = "f(x)", 
+       title = "Parametric Serial Interval Distribution",
+       subtitle = "Gamma Distribution") +
+  theme_minimal() +
+    geom_vline(xintercept = gamma_mean, linetype="dashed", 
+             color = "orangered", size=1)
+
+```
 
 ## $\text{R}_\text{eff}$ Estimation Results for South Tyrol
 
