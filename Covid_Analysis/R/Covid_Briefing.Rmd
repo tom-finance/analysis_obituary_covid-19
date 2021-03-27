@@ -14,7 +14,7 @@ output:
     theme: "boxes"
     colortheme: "dove"
 header-includes:
-- \usepackage[german]{babel}
+- \usepackage[english]{babel}
 - \usepackage{booktabs}
 - \usepackage{longtable}
 - \usepackage{array}
@@ -47,10 +47,10 @@ knitr::opts_chunk$set(message = FALSE)
 source("covid_analysis.R", encoding = "UTF-8")
 
 
-# calculate scale and shape parameter for Gamma distribution from given mean and sd
+# calculate scale and shape parameter for Gamma distribution from given mean and
+# standard deviation for a Gamma distribution
 alpha <- (gamma_mean/gamma_sd)^2
 beta <- gamma_sd^2/gamma_mean
-
 ```
 
 ## Covid-19 Briefing South Tyrol
@@ -82,7 +82,7 @@ incidence_daily
 ```
 
 
-## 7-Day Incidence 100k South Tyrol `r format(min_incidence, "%d.%m.%y")`-`r format(max_incidence, "%d.%m.%y")`
+## 7-Day Incidence 100k South Tyrol `r format(min_incidence, "%d.%m.%y")` - `r format(max_incidence, "%d.%m.%y")`
 
 ```{r, echo=FALSE}
 
@@ -90,7 +90,7 @@ seven_day
 
 ```
 
-## 7-day Incidence  100k Details `r format(min_incidence, "%d.%m.%y")`-`r format(max_incidence, "%d.%m.%y")`
+## 7-day Incidence  100k Details `r format(min_incidence, "%d.%m.%y")` - `r format(max_incidence, "%d.%m.%y")`
 
 ```{r, echo=FALSE}
 
@@ -98,7 +98,7 @@ seven_day_all
 
 ```
 
-## 7-day Incidence  100k Detail Table `r format(max_incidence, "%d.%m.%y")`
+## 7-day Incidence  100k Detail Table `r format(max_incidence, "%d.%m.%Y")`
 
 ```{r, echo=FALSE}
 
@@ -143,7 +143,7 @@ ggplot(data.frame(x = c(x_lower_g , x_upper_g)), aes(x = x)) +
        subtitle = "Gamma Distribution") +
   theme_minimal() +
   geom_vline(xintercept = gamma_mean, linetype="dashed", 
-             color = "orangered", size=1)
+             color = "orangered", size=1) # add mean of Gamma distribution to plot
 
 ```
 
