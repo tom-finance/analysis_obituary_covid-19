@@ -12,6 +12,7 @@ library(readxl)
 library(EpiEstim)
 library(incidence)
 library(RcppRoll)
+library(directlabels)
 
 ################################################################################
 
@@ -116,7 +117,10 @@ seven_day_incidence <- data_clean %>%
   ungroup() %>% 
   left_join(., population) %>% # join with population data
   filter(!is.na(roll_sum)) %>%  # exclude NA values fromd data
-  mutate(seven_day_incidence = roll_sum/Einwohner*10^5) # calculate 7 day incidence/100k
+  mutate(seven_day_incidence = roll_sum/Einwohner*10^5) %>% # calculate 7 day incidence/100k
+  group_by(Bezirkgsgemeinschaft) %>% 
+  mutate(last_value = round(last(seven_day_incidence), 0)) %>% 
+  ungroup()
 
 
 # get time information for reporting
@@ -167,7 +171,8 @@ seven_day <- ggplot(seven_day_incidence %>%
            xmax = end_lockdown, 
            ymin = 0, ymax = max_value_overall, 
            alpha = .15, fill = "lightblue") +
-  geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1) 
+  geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1) +
+  geom_dl(aes(label=last_value), method = list("last.qp", cex = 0.8)) # add value of last observation
 
 seven_day
 
