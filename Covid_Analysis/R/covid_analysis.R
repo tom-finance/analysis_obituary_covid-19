@@ -172,7 +172,10 @@ seven_day <- ggplot(seven_day_incidence %>%
            ymin = 0, ymax = max_value_overall, 
            alpha = .15, fill = "lightblue") +
   geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1) +
-  geom_dl(aes(label=last_value), method = list("last.qp", cex = 0.8)) # add value of last observation
+  geom_dl(aes(label=last_value), method = list("last.qp", 
+                                               cex = 0.8, colour = "steelblue")) + # add value of last observation
+  annotate("text", x=min_incidence, y=50, label="50 7-day Incidence", color = "orangered",
+           vjust = -0.5, hjust = 0.2)
 
 seven_day
 
@@ -191,7 +194,9 @@ seven_day_all <- ggplot(seven_day_incidence, aes(x = datum, y = seven_day_incide
            xmax = end_lockdown, 
            ymin = 0, ymax = max(seven_day_incidence$seven_day_incidence), 
            alpha = .15, fill = "lightblue") +
-  geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1)
+  geom_hline(yintercept=50, linetype="dashed", color = "orangered", size = 1) +
+  annotate("text", x=min_incidence, y=50, label="50 7-day Incidence", color = "orangered",
+           vjust = -0.5, hjust = 0.2)
 
 seven_day_all
 
