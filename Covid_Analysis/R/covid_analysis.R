@@ -54,7 +54,7 @@ data$name <- gsub(" Gesamt", "", data$name)
 #######################
 
 start_lockdown <- as.Date("2021-02-14")
-end_lockdown <- max(data$datum)
+end_lockdown <- as.Date("2021-04-25")
 
 gamma_mean <- 4.46
 gamma_sd <- 2.63
